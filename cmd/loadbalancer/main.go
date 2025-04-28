@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"cloudru/internal/balancer"
@@ -20,10 +24,24 @@ func main() {
 	go lb.HealthCheck(10 * time.Second)
 
 	px := proxy.New(lb)
-	srv := server.New(px, cfg.Port)
+	srv := new(server.Server)
 
-	if err := srv.Start(); err != nil {
-		log.Fatalf("Server starting failed: %v", err)
+	//gracefull shutdown
+	go func() {
+		if err := srv.Run(cfg.Port, px); err != nil {
+			log.Fatalf("error running server: %s", err.Error())
+		}
+	}()
+
+	log.Println("Loadbalancer is started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Loadbalancer is stopped")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Fatalf("error on server shutdown: %s", err)
 	}
-	log.Printf("Starting server")
 }
