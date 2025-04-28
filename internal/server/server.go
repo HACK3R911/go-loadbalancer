@@ -1,26 +1,26 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 )
 
 type Server struct {
-	handler http.Handler
-	port    string
+	httpServer *http.Server
 }
 
-func New(handler http.Handler, port string) *Server {
-	return &Server{
-		handler: loggingMiddleware(handler),
-		port:    port,
+func (s *Server) Run(port string, handler http.Handler) error {
+	s.httpServer = &http.Server{
+		Addr:    ":" + port,
+		Handler: loggingMiddleware(handler),
 	}
+	return s.httpServer.ListenAndServe()
 }
 
-func (s *Server) Start() error {
-	addr := ":" + s.port
-	log.Printf("Starting server on %s", addr)
-	return http.ListenAndServe(addr, s.handler)
+func (s *Server) Shutdown(ctx context.Context) error {
+	log.Println("Shutting down server...")
+	return s.httpServer.Shutdown(ctx)
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
