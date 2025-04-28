@@ -4,3 +4,7 @@ backends:
   - "localhost:9001"
   - "localhost:9002"
   - "localhost:9003"
+
+rateLimit:
+  capacity: 100    # Максимальное количество токенов
+  refill_rate: 10
