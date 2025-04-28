@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -9,15 +10,20 @@ import (
 	"time"
 
 	"cloudru/internal/balancer"
-	"cloudru/internal/configs"
 	"cloudru/internal/proxy"
 	"cloudru/internal/server"
+
+	"cloudru/internal/configs"
 )
 
 func main() {
-	cfg, err := configs.Load("config.yaml")
+	var configPath string
+	flag.StringVar(&configPath, "config", "config.yaml", "Path to config file")
+	flag.Parse()
+
+	cfg, err := configs.Load(configPath)
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Fatalf("Config error: %v", err)
 	}
 
 	lb := balancer.New(cfg.Backends)
