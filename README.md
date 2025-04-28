@@ -1,4 +1,16 @@
+Проверка портов на доступность
 
+Для Windows
+```
+netstat -ano | findstr :9001
+netstat -ano | findstr :9002
+netstat -ano | findstr :9003
+```
+
+Для Linux
+```
+netstat -ano | findstr ":9001 :9002 :9003"
+```
 
 Для создания тестовых бекендов
 ```
