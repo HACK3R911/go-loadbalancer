@@ -1,48 +1,61 @@
 package main
 
 import (
+	"cloudru/internal/configs"
+	"cloudru/internal/logger"
+	"cloudru/internal/server"
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"cloudru/internal/balancer"
-	"cloudru/internal/configs"
-	"cloudru/internal/proxy"
-	"cloudru/internal/server"
 )
 
 func main() {
-	cfg, err := configs.Load("config.yaml")
+	// TODO viper config
+	// TODO /healthcheck
+	// TODO prometh метрики
+
+	cfg, err := configs.Load()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		panic(err)
 	}
 
-	lb := balancer.New(cfg.Backends)
-	go lb.HealthCheck(10 * time.Second)
+	log, err := logger.New(cfg.LogLevel)
+	if err != nil {
+		panic(err)
+	}
+	defer log.Sync()
 
-	px := proxy.New(lb)
-	srv := new(server.Server)
+	//"health_check %b \n", cfg.HealthCheck.Enable,
+	//"rate_limit %b", cfg.RateLimit.Enable,
+	log.Infof(`Конфигурация загружена
+		port %s,
+		algorithm %s
+		backends_count %d`,
+		cfg.Port, cfg.Algorithm, len(cfg.Backends),
+	)
+
+	//lb := balancer.New(cfg.Backends)
+	//go lb.HealthCheck(10 * time.Second)
+	//
+	//px := proxy.New(lb)
+	srv := server.New(log)
 
 	//Старт сервера
 	go func() {
-		if err := srv.Run(cfg.Port, px); err != nil {
-			log.Fatalf("error running server: %s", err.Error())
+		if err := srv.Run(cfg.Port); err != nil {
+			log.Fatalf("Ошибка запуска сервера: %s", err.Error())
 		}
 	}()
-
-	log.Println("Loadbalancer is started ")
 
 	//gracefull shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Loadbalancer is stopped")
-
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Fatalf("error on server shutdown: %s", err)
+		log.Fatalf("Ошибка при завершении работы сервера: %s", err)
 	}
+
+	log.Info("Сервер успешно остановлен")
 }

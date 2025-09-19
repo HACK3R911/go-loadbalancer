@@ -1,9 +1,27 @@
 port: "8080"
 
+algorithm: "least_connections"
+
 backends:
-  - "backend1:9001"
-  - "backend2:9002"
-  - "backend3:9003"
-  # - "localhost:9001"
-  # - "localhost:9002"
-  # - "localhost:9003"
+  - url: "http://server1:8080"
+    weight: 1
+    max_conn: 100
+  - url: "http://server2:8080"
+    weight: 2
+    max_conn: 200
+  - url: "http://server3:8080"
+    weight: 1
+    max_conn: 150
+
+health_check:
+  enable: true
+  interval: "10s"
+  timeout: "5s"
+  path: "/health"
+  status_codes: [200, 301]
+
+rate_limit:
+  enable: true
+  max_requests: 1000
+  interval: "1m"
+  burst: 100
