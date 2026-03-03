@@ -8,10 +8,10 @@ import (
 	"syscall"
 	"time"
 
-	"cloudru/internal/balancer"
-	"cloudru/internal/configs"
-	"cloudru/internal/proxy"
-	"cloudru/internal/server"
+	"github.com/HACK3R911/go-loadbalancer/internal/balancer"
+	"github.com/HACK3R911/go-loadbalancer/internal/configs"
+	"github.com/HACK3R911/go-loadbalancer/internal/proxy"
+	"github.com/HACK3R911/go-loadbalancer/internal/server"
 )
 
 func main() {

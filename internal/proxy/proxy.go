@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"cloudru/internal/balancer"
+	"github.com/HACK3R911/go-loadbalancer/internal/balancer"
 )
 
 type contextKey string
