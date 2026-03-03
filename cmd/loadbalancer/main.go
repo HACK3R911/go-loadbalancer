@@ -26,15 +26,16 @@ func main() {
 	px := proxy.New(lb)
 	srv := new(server.Server)
 
-	//gracefull shutdown
+	//Старт сервера
 	go func() {
 		if err := srv.Run(cfg.Port, px); err != nil {
 			log.Fatalf("error running server: %s", err.Error())
 		}
 	}()
 
-	log.Println("Loadbalancer is started")
+	log.Println("Loadbalancer is started ")
 
+	//gracefull shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

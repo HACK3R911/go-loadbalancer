@@ -1,0 +1,39 @@
+services:
+  load-balancer:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - lb-network
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+
+  backend1:
+    image: python:3.12-alpine
+    command: sh -c "python -m http.server 9001"
+    ports:
+      - "9001:9001"
+    networks:
+      - lb-network
+
+  backend2:
+    image: python:3.12-alpine
+    command: sh -c "python -m http.server 9002"
+    ports:
+      - "9002:9002"
+    networks:
+      - lb-network
+
+  backend3:
+    image: python:3.12-alpine
+    command: sh -c "python -m http.server 9003"
+    ports:
+      - "9003:9003"
+    networks:
+      - lb-network
+
+networks:
+  lb-network:
+    driver: bridge

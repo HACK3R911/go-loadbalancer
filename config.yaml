@@ -1,6 +1,9 @@
 port: "8080"
 
 backends:
-  - "localhost:9001"
-  - "localhost:9002"
-  - "localhost:9003"
+  - "backend1:9001"
+  - "backend2:9002"
+  - "backend3:9003"
+  # - "localhost:9001"
+  # - "localhost:9002"
+  # - "localhost:9003"
