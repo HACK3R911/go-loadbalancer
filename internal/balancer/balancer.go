@@ -1,6 +1,7 @@
 package balancer
 
 import (
+	"context"
 	"errors"
 	"net"
 	"sync"
@@ -24,12 +25,17 @@ func New(backends []string) *Balancer {
 	return b
 }
 
-func (b *Balancer) HealthCheck(interval time.Duration) {
+func (b *Balancer) HealthCheck(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		b.checkAll()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			b.checkAll()
+		}
 	}
 }
 

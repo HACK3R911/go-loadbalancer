@@ -21,7 +21,11 @@ func main() {
 	}
 
 	lb := balancer.New(cfg.Backends)
-	go lb.HealthCheck(10 * time.Second)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go lb.HealthCheck(ctx, 10*time.Second)
 
 	px := proxy.New(lb)
 	srv := new(server.Server)
@@ -41,6 +45,8 @@ func main() {
 	<-quit
 
 	log.Println("Loadbalancer is stopped")
+
+	cancel()
 
 	if err := srv.Shutdown(context.Background()); err != nil {
 		log.Fatalf("error on server shutdown: %s", err)
