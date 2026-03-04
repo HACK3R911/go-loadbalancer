@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -9,18 +10,26 @@ import (
 	"time"
 
 	"github.com/HACK3R911/go-loadbalancer/internal/balancer"
-	"github.com/HACK3R911/go-loadbalancer/internal/configs"
+	"github.com/HACK3R911/go-loadbalancer/internal/config"
 	"github.com/HACK3R911/go-loadbalancer/internal/proxy"
 	"github.com/HACK3R911/go-loadbalancer/internal/server"
 )
 
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", "config.yaml", "путь к конфигурационному файлу")
+}
+
 func main() {
-	cfg, err := configs.Load("config.yaml")
+	flag.Parse()
+
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	lb := balancer.New(cfg.Backends)
+	lb := balancer.New(cfg.Backends())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -32,7 +41,7 @@ func main() {
 
 	//Старт сервера
 	go func() {
-		if err := srv.Run(cfg.Port, px); err != nil {
+		if err := srv.Run(cfg.Port(), px); err != nil {
 			log.Fatalf("error running server: %s", err.Error())
 		}
 	}()
